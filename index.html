@@ -21,37 +21,56 @@
     }
     .container {
       background: white;
-      padding: 2.5rem 2rem 3rem;
+      padding: 1.5rem 1.5rem 2rem;
+      padding-top: 2rem;
       border-radius: 20px;
       text-align: center;
-      max-width: 400px;
+      max-width: 380px;
       width: 90%;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
       position: relative;
       z-index: 2;
+      transition: max-width 0.3s ease, width 0.3s ease;
     }
     h1 {
       margin-top: 0;
       color: #ff4d6d;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
     }
     p {
       color: #555;
-      font-size: 1rem;
-      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
     }
     .buttons {
       display: flex;
       justify-content: center;
-      gap: 1rem;
+      align-items: center;
+      gap: 0.75rem;
+      transition: gap 0.3s ease, justify-content 0.3s ease;
+      padding: 0;
+    }
+    .buttons.center {
+      justify-content: center;
+      padding: 0;
+    }
+    .buttons.hidden {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    .buttons.hidden.remove {
+      display: none;
     }
     button {
-      padding: 0.75rem 1.5rem;
+      padding: 0.65rem 1.25rem;
       border: none;
       border-radius: 999px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      white-space: nowrap;
+      min-width: fit-content;
     }
     button:active {
       transform: scale(0.95);
@@ -60,6 +79,7 @@
       background: #ff4d6d;
       color: white;
       box-shadow: 0 10px 20px rgba(255, 77, 109, 0.4);
+      transform-origin: center;
     }
     .no-btn {
       background: #eee;
@@ -74,10 +94,30 @@
     }
     .message {
       display: none;
-      margin-top: 1.5rem;
-      font-size: 1.2rem;
+      margin-top: 1.25rem;
+      font-size: 1.05rem;
       color: #ff4d6d;
       font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .message.large {
+      font-size: 1.3rem;
+      margin-top: 0;
+    }
+    .message.show {
+      opacity: 1;
+    }
+    .dancing-gif {
+      display: none;
+      margin-top: 1.5rem;
+      width: 150px;
+      height: auto;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .dancing-gif.show {
+      opacity: 1;
     }
     .hearts {
       position: fixed;
@@ -108,8 +148,8 @@
 <body>
   <div class="hearts" id="hearts"></div>
   <div class="container">
-    <h1>Teveen 💕</h1>
-    <p>Will you be my Valentine?</p>
+    <h1>Teveen Jaaaaaaaaaaan 💕</h1>
+    <p>Oozoom es linel im Valentine?</p>
     <div class="buttons">
       <button class="yes-btn" id="yesBtn">Yes 💖</button>
       <button class="no-btn" id="noBtn">No 🙃</button>
@@ -117,43 +157,66 @@
     <div class="message" id="message">
       Never had a doubt in my mind 🥰
     </div>
+    <img src="hetalia-dancing.gif" alt="Dancing celebration" class="dancing-gif" id="dancingGif">
   </div>
   <script>
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
     const message = document.getElementById('message');
+    const dancingGif = document.getElementById('dancingGif');
     const heartsContainer = document.getElementById('hearts');
+    const buttonsContainer = document.querySelector('.buttons');
+    const container = document.querySelector('.container');
     let heartInterval = null;
-    let yesScale = 1;
-    let noScale = 1;
     let noClickCount = 0;
-    const noTexts = ["No 🙃", "Are you sure?", "Really?", "Last chance 😳"];
+    const noTexts = [
+      "No 🙃", 
+      "Are you sure?", 
+      "Really?", 
+      "Think again 🤔",
+      "Last chance 😳",
+      "You sure about that?",
+      "Seriously? 😅",
+      "Come on now...",
+      "Don't be like that 🥺",
+      "Pretty please? 💕",
+      "I'm waiting... ⏰",
+      "This is getting awkward 😬",
+      "Still no? Really? 🤨",
+      "You're breaking my heart 💔",
+      "One more chance? 🙏",
+      "I won't give up! 💪",
+      "Reconsider? 🥹",
+      "This is your final warning ⚠️",
+      "Okay fine... 😤",
+      "You leave me no choice 😘"
+    ];
     
-    // Mobile-friendly NO button behavior: YES grows bigger and wiggles, NO shrinks
+    // NO button behavior: Just updates text with funny messages
     noBtn.addEventListener('click', () => {
-      yesScale += 0.2;
-      noScale -= 0.15;
       noClickCount++;
       
       // Update NO button text dynamically
       if (noClickCount < noTexts.length) {
         noBtn.textContent = noTexts[noClickCount];
+        
+        // Dynamically adjust container width based on text length
+        // Estimate width needed based on character count
+        const textLength = noTexts[noClickCount].length;
+        const baseWidth = 380;
+        const extraWidth = Math.max(0, (textLength - 10) * 5); // Add 5px per character over 10
+        const newMaxWidth = Math.min(500, baseWidth + extraWidth); // Cap at 500px
+        container.style.maxWidth = `${newMaxWidth}px`;
       }
       
-      // Apply wiggle animation to YES button
-      yesBtn.style.setProperty('--scale', yesScale);
-      yesBtn.style.animation = 'wiggle 0.5s ease';
-      yesBtn.style.transformOrigin = 'center';
-      
-      // Reset animation after it completes
-      setTimeout(() => {
-        yesBtn.style.animation = '';
-        yesBtn.style.transform = `scale(${yesScale})`;
-      }, 500);
-      
-      // Shrink NO button
-      noBtn.style.transform = `scale(${Math.max(0.3, noScale)})`;
-      noBtn.style.transition = 'transform 0.2s ease';
+      // After 20 clicks, change YES button text and hide NO button
+      if (noClickCount >= 20) {
+        yesBtn.textContent = "Sorry you have no choice 😘";
+        noBtn.style.display = 'none';
+        buttonsContainer.classList.add('center');
+        // Adjust container for the new YES button text
+        container.style.maxWidth = '420px';
+      }
     });
     
     // YES button logic with haptic feedback
@@ -169,13 +232,40 @@
         } catch(e) {}
       }
       
-      // Reset YES button to original size
-      yesScale = 1;
-      yesBtn.style.transform = 'scale(1)';
-      yesBtn.style.transition = 'transform 0.3s ease';
+      // Fade out buttons
+      buttonsContainer.classList.add('hidden');
       
-      message.style.display = 'block';
-      // Start flooding hearts
+      // After buttons fade out, show message
+      setTimeout(() => {
+        // Update message based on number of NO clicks
+        if (noClickCount >= 20) {
+          message.innerHTML = 'Never had a doubt in my mind 🥰<br>Finally, now I can give you your present 🙄';
+        } else {
+          message.textContent = 'Never had a doubt in my mind 🥰';
+        }
+        
+        // Show message with fade-in and larger styling
+        message.style.display = 'block';
+        message.classList.add('large');
+        
+        // Trigger fade-in after display is set
+        setTimeout(() => {
+          message.classList.add('show');
+          
+          // Show dancing gif after message appears
+          setTimeout(() => {
+            dancingGif.style.display = 'block';
+            setTimeout(() => {
+              dancingGif.classList.add('show');
+            }, 50);
+          }, 300);
+        }, 50);
+        
+        // Completely remove buttons after everything
+        buttonsContainer.classList.add('remove');
+      }, 500);
+      
+      // Start flooding hearts immediately
       if (!heartInterval) {
         heartInterval = setInterval(() => {
           for (let i = 0; i < 15; i++) {
