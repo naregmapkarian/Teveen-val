@@ -10,7 +10,6 @@
       box-sizing: border-box;
       font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
-
     body {
       margin: 0;
       height: 100vh;
@@ -20,7 +19,6 @@
       background: url('pikachu-bg.png') center / cover no-repeat fixed;
       overflow: hidden;
     }
-
     .container {
       background: white;
       padding: 2.5rem 2rem 3rem;
@@ -32,25 +30,21 @@
       position: relative;
       z-index: 2;
     }
-
     h1 {
       margin-top: 0;
       color: #ff4d6d;
       font-size: 1.8rem;
     }
-
     p {
       color: #555;
       font-size: 1rem;
       margin-bottom: 2rem;
     }
-
     .buttons {
       display: flex;
       justify-content: center;
       gap: 1rem;
     }
-
     button {
       padding: 0.75rem 1.5rem;
       border: none;
@@ -59,27 +53,25 @@
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     button:active {
       transform: scale(0.95);
     }
-
     .yes-btn {
       background: #ff4d6d;
       color: white;
       box-shadow: 0 10px 20px rgba(255, 77, 109, 0.4);
     }
-
-    .yes-btn:hover {
-      transform: translateY(-2px);
-    }
-
     .no-btn {
       background: #eee;
       color: #555;
       position: relative;
+      z-index: 10;
     }
-
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg) scale(var(--scale)); }
+      25% { transform: rotate(-5deg) scale(var(--scale)); }
+      75% { transform: rotate(5deg) scale(var(--scale)); }
+    }
     .message {
       display: none;
       margin-top: 1.5rem;
@@ -87,7 +79,6 @@
       color: #ff4d6d;
       font-weight: 600;
     }
-
     .hearts {
       position: fixed;
       inset: 0;
@@ -95,7 +86,6 @@
       overflow: hidden;
       z-index: 1;
     }
-
     .heart {
       position: absolute;
       bottom: -20px;
@@ -103,7 +93,6 @@
       animation: floatUp linear forwards;
       opacity: 0.8;
     }
-
     @keyframes floatUp {
       from {
         transform: translateY(0) scale(1);
@@ -118,43 +107,75 @@
 </head>
 <body>
   <div class="hearts" id="hearts"></div>
-
   <div class="container">
     <h1>Teveen 💕</h1>
     <p>Will you be my Valentine?</p>
-
     <div class="buttons">
       <button class="yes-btn" id="yesBtn">Yes 💖</button>
       <button class="no-btn" id="noBtn">No 🙃</button>
     </div>
-
     <div class="message" id="message">
       Never had a doubt in my mind 🥰
     </div>
   </div>
-
   <script>
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
     const message = document.getElementById('message');
     const heartsContainer = document.getElementById('hearts');
-
     let heartInterval = null;
-
-    // Make the NO button dodge the cursor
-    noBtn.addEventListener('mouseover', () => {
-      const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-      const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
-      noBtn.style.position = 'fixed';
-      noBtn.style.left = `${x}px`;
-      noBtn.style.top = `${y}px`;
+    let yesScale = 1;
+    let noScale = 1;
+    let noClickCount = 0;
+    const noTexts = ["No 🙃", "Are you sure?", "Really?", "Last chance 😳"];
+    
+    // Mobile-friendly NO button behavior: YES grows bigger and wiggles, NO shrinks
+    noBtn.addEventListener('click', () => {
+      yesScale += 0.2;
+      noScale -= 0.15;
+      noClickCount++;
+      
+      // Update NO button text dynamically
+      if (noClickCount < noTexts.length) {
+        noBtn.textContent = noTexts[noClickCount];
+      }
+      
+      // Apply wiggle animation to YES button
+      yesBtn.style.setProperty('--scale', yesScale);
+      yesBtn.style.animation = 'wiggle 0.5s ease';
+      yesBtn.style.transformOrigin = 'center';
+      
+      // Reset animation after it completes
+      setTimeout(() => {
+        yesBtn.style.animation = '';
+        yesBtn.style.transform = `scale(${yesScale})`;
+      }, 500);
+      
+      // Shrink NO button
+      noBtn.style.transform = `scale(${Math.max(0.3, noScale)})`;
+      noBtn.style.transition = 'transform 0.2s ease';
     });
-
-    // YES button logic
+    
+    // YES button logic with haptic feedback
     yesBtn.addEventListener('click', () => {
+      // Haptic feedback for iPhone
+      if (navigator.vibrate) {
+        navigator.vibrate([50, 30, 50, 30, 50]);
+      }
+      // Alternative haptic API for iOS
+      if (window.webkit && window.webkit.messageHandlers) {
+        try {
+          window.webkit.messageHandlers.haptic.postMessage('impact');
+        } catch(e) {}
+      }
+      
+      // Reset YES button to original size
+      yesScale = 1;
+      yesBtn.style.transform = 'scale(1)';
+      yesBtn.style.transition = 'transform 0.3s ease';
+      
       message.style.display = 'block';
-
-      // Start flooding hearts every time YES is clicked
+      // Start flooding hearts
       if (!heartInterval) {
         heartInterval = setInterval(() => {
           for (let i = 0; i < 15; i++) {
@@ -163,7 +184,7 @@
         }, 400);
       }
     });
-
+    
     function createHeart() {
       const heart = document.createElement('div');
       heart.classList.add('heart');
@@ -172,7 +193,6 @@
       heart.style.animationDuration = 3 + Math.random() * 3 + 's';
       heart.style.fontSize = 16 + Math.random() * 24 + 'px';
       heartsContainer.appendChild(heart);
-
       setTimeout(() => {
         heart.remove();
       }, 6000);
