@@ -139,6 +139,9 @@
     const message = document.getElementById('message');
     const heartsContainer = document.getElementById('hearts');
 
+    let heartInterval = null;
+
+    // Make the NO button dodge the cursor
     noBtn.addEventListener('mouseover', () => {
       const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
       const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
@@ -147,28 +150,19 @@
       noBtn.style.top = `${y}px`;
     });
 
+    // YES button logic
     yesBtn.addEventListener('click', () => {
       message.style.display = 'block';
-      yesBtn.disabled = false;
-      noBtn.disabled = true;
-      startHearts();
+
+      // Start flooding hearts every time YES is clicked
+      if (!heartInterval) {
+        heartInterval = setInterval(() => {
+          for (let i = 0; i < 15; i++) {
+            createHeart();
+          }
+        }, 400);
+      }
     });
-
-    function startHearts() {
-      for (let i = 0; i < 30; i++) {
-        createHeart();
-      }
-    }
-
-    // flood hearts repeatedly
-    setInterval(() => {
-      if (message.style.display === 'block') {
-        for (let i = 0; i < 10; i++) {
-          createHeart();
-        }
-      }
-    }, 500);
-    }
 
     function createHeart() {
       const heart = document.createElement('div');
